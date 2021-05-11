@@ -1,0 +1,46 @@
+server:
+  port: 9527
+
+spring:
+  application:
+    name: e-gateway
+  cloud:
+    gateway:
+      # 实现动态路由，从注册中心中获取具体服务实例并路由
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: a-eureka-producer-8001-1   # ID 唯一表示 不可重复
+        #  uri: http://localhost:8001    # 不使用动态路由时配置具体访问地址
+          uri: lb://a-eureka-producer   # 动态路由
+          predicates:
+            - Path=/consumer/get/**      #断言
+
+        - id: a-eureka-producer-8001-2
+          uri: lb://a-eureka-producer
+          predicates:
+            - Path=/consumer/get2/**
+
+
+eureka:
+  client:
+    #eureka的服务地址
+    service-url:
+      #单机版只需配置一个eureka地址
+      # defaultZone: http://localhost:7000/eureka
+      #集群版配置多个
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka
+    #表示是否将自己注册进eureka 默认为true
+    register-with-eureka: true
+    #是否从eureka中抓取已经注册的服务，默认为true，单节点无所谓，集群必须配置为true，才能配合Ribbon使用负载均衡
+    fetch-registry: true
+  instance:
+    #本服务的实例别名
+    instance-id: e-gateway-9527
+    #访问路径可以显示ip地址
+    prefer-ip-address: true
+
+
